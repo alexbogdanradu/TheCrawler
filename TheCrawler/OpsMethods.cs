@@ -438,7 +438,8 @@ namespace TheCrawler
 
             foreach (var match in res1)
             {
-                TimeSpan time = new TimeSpan(days, 0, 0, 0);
+                TimeSpan offset = new TimeSpan(days, 0, 0, 0);
+                DateTime date = DateTime.Now.Date;
 
                 if (days == -1)
                 {
@@ -446,7 +447,7 @@ namespace TheCrawler
                 }
                 else
                 {
-                    if (match.dtDateTime < today + time)
+                    if ((match.dtDateTime > DateTime.Now) && (match.dtDateTime < date + offset))
                     {
                         Console.SetCursorPosition(0, cursory);
                         Console.Write($"| {i++}. ");
