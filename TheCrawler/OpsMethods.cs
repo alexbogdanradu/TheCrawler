@@ -14,22 +14,6 @@ namespace TheCrawler
 {
     public partial class Ops
     {
-        public List<League> lglist;
-        public List<League> playedmatches;
-        public ChromeDriver browser;
-        public StreamWriter writerToFile;
-        public XmlSerializer serializer;
-        public string filename;
-
-        public Ops()
-        {
-            lglist = new List<League>();
-            playedmatches = new List<League>();
-            //this.browser = new ChromeDriver();
-            //this.writerToFile = new StreamWriter(filename);
-            serializer = new XmlSerializer(typeof(List<League>));
-        }
-
         public void SerializeToFile(string path)
         {
             serializer.Serialize(new StreamWriter(path), lglist);
@@ -65,7 +49,7 @@ namespace TheCrawler
         {
             if (this.browser == null)
             {
-                this.browser = new ChromeDriver();
+                this.browser = new ChromeDriver(options);
             }
 
             foreach (var item in this.lglist)
@@ -108,7 +92,7 @@ namespace TheCrawler
         {
             if (this.browser == null)
             {
-                this.browser = new ChromeDriver();
+                this.browser = new ChromeDriver(options);
             }
 
             foreach (var item in this.playedmatches)
@@ -121,7 +105,7 @@ namespace TheCrawler
         {
             if (this.browser == null)
             {
-                this.browser = new ChromeDriver();
+                this.browser = new ChromeDriver(options);
             }
 
             List<Match> matches = new List<Match>();
@@ -215,7 +199,7 @@ namespace TheCrawler
         {
             if (this.browser == null)
             {
-                this.browser = new ChromeDriver();
+                this.browser = new ChromeDriver(options);
             }
 
             List<string> standings = new List<string>();
@@ -264,7 +248,7 @@ namespace TheCrawler
         {
             if (this.browser == null)
             {
-                this.browser = new ChromeDriver();
+                this.browser = new ChromeDriver(options);
             }
 
             List<Match> matches = new List<Match>();

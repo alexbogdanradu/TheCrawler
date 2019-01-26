@@ -43,6 +43,9 @@ namespace TheCrawler
             PTPrimeiraLiga,
             POEkstraklasa,
             TRSuperLig,
+            NLEredivisie,
+            RUPremierLeague,
+            GRSUperLeague,
         }
 
         public static Dictionary<Leagues, string> dictLeagues = new Dictionary<Leagues, string>()
@@ -80,6 +83,10 @@ namespace TheCrawler
             {Leagues.PTPrimeiraLiga, "portugalia/primeira-liga"},
             {Leagues.POEkstraklasa, "polonia/ekstraklasa"},
             {Leagues.TRSuperLig, "turcia/super-lig"},
+            {Leagues.NLEredivisie, "olanda/eredivisie"},
+            {Leagues.RUPremierLeague, "rusia/premier-league"},
+            {Leagues.GRSUperLeague, "grecia/super-league"},
+
         };
     }
 
