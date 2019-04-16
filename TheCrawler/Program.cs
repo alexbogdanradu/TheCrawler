@@ -20,21 +20,21 @@ namespace TheCrawler
             //op1.browser = new ChromeDriver();
 
             /////////////////////////////////////////////////////////////////////////////////////////           1. GET MATCHES AND STANDINGS FROM WEB AND STORE THEM TO XML
-            op1.InitAllLeagues();
-            Console.WriteLine($"Started at {start.ToShortTimeString().ToString()}");
+            //op1.InitAllLeagues();
+            //Console.WriteLine($"Started at {start.ToShortTimeString().ToString()}");
             //Console.WriteLine("RUNNING IN HEADLESS MODE..");
-            op1.GetLatestMatchesAndStandingsFromWeb(ref op1.browser);
-            op1.SerializeToFile($"flashscoredb_{op1.lglist.Count}_leagues_{timestamp}.xml");
-            op1.Clean();
+            //op1.GetLatestMatchesAndStandingsFromWeb(ref op1.browser);
+            //op1.SerializeToFile($"flashscoredb_{op1.lglist.Count}_leagues_{timestamp}.xml");
+            //op1.Clean();
 
             /////////////////////////////////////////////////////////////////////////////////////////           2. GET MATCHES AND STANDINGS FROM THE FILE
-            //op1.GetLatestMatchesAndStandingsFromFile(@"flashscoredb_36_leagues_1262019_good.xml");
+            op1.GetLatestMatchesAndStandingsFromFile(@"flashscoredb_44_leagues_1272019.xml");
 
             /////////////////////////////////////////////////////////////////////////////////////////           3. ESTIMATE THE PROGNOSTIC FOR FUTURE GAMES
-            //List<Match> res1 = op1.DetermineBetabilityForFutureMatches();
+            List<Match> res1 = op1.DetermineBetabilityForFutureMatches();
 
             /////////////////////////////////////////////////////////////////////////////////////////           4. SHOW MATCHES TO BET
-            //op1.ShowFutureWinningMatchesByDaysFromNow(7, res1); //-1 for all, 3 for 3 days
+            op1.ShowFutureWinningMatchesByDaysFromNow(1, res1); //-1 for all, 3 for 3 days
 
             /////////////////////////////////////////////////////////////////////////////////////////           1. GET PLAYED MATCHES FROM WEB AND STORE THEM TO XML
             //op1.InitAllLeagues();

@@ -139,12 +139,12 @@ namespace TheCrawler
 
                     foreach (var item in home)
                     {
-                        matches[iHome++].strHomeTeam = item.Text;
+                        matches[iHome++].strAwayTeam = item.Text;
                     }
 
                     foreach (var item in away)
                     {
-                        matches[iAway++].strAwayTeam = item.Text;
+                        matches[iAway++].strHomeTeam = item.Text;
                     }
 
                     foreach (var item in score)
@@ -212,7 +212,7 @@ namespace TheCrawler
 
                 try
                 {
-                    _driver.Navigate().GoToUrl($"https://www.flashscore.ro/fotbal/{dictLeagues[_league]}/clasament/");
+                    _driver.Navigate().GoToUrl($"https://www.flashscore.ro/{dictLeagues[_league]}/clasament/");
 
                     IWebElement table = _driver.FindElement(By.TagName("tbody"));
                     ICollection<IWebElement> team = table.FindElements(By.ClassName("team_name_span"));
@@ -261,12 +261,12 @@ namespace TheCrawler
 
                 try
                 {
-                    _driver.Navigate().GoToUrl($"https://www.flashscore.ro/fotbal/{dictLeagues[_league]}/meciuri/");
+                    _driver.Navigate().GoToUrl($"https://www.flashscore.ro/{dictLeagues[_league]}/meciuri/");
 
                     IWebElement table = _driver.FindElement(By.TagName("tbody"));
 
-                    ICollection<IWebElement> home = table.FindElements(By.ClassName("padl"));
-                    ICollection<IWebElement> away = table.FindElements(By.ClassName("padr"));
+                    ICollection<IWebElement> home = table.FindElements(By.ClassName("team-home"));
+                    ICollection<IWebElement> away = table.FindElements(By.ClassName("team-away"));
                     ICollection<IWebElement> time = table.FindElements(By.ClassName("time"));
 
                     int iHome = 0;
@@ -280,12 +280,17 @@ namespace TheCrawler
 
                     foreach (var item in home)
                     {
-                        matches[iHome++].strAwayTeam = item.Text;
+                        string matchType = dictLeagues[_league];
+
+                        matchType = matchType.Substring(0, matchType.IndexOf("/"));
+                        matches[iHome].matchLeague = _league;
+                        matches[iHome].strGameType = matchType;
+                        matches[iHome++].strHomeTeam = item.Text;
                     }
 
                     foreach (var item in away)
                     {
-                        matches[iAway++].strHomeTeam = item.Text;
+                        matches[iAway++].strAwayTeam = item.Text;
                     }
 
                     foreach (var item in time)
@@ -364,8 +369,6 @@ namespace TheCrawler
                 {
                     result.AddRange(league.DetermineBetability());
                 }
-
-
             }
 
             return result;
@@ -417,7 +420,7 @@ namespace TheCrawler
             DateTime today = DateTime.Now;
 
             Console.WriteLine($"|-GAMES-IN THE NEXT-{days}-DAYS---------------------------------------------------------------------------|");
-            
+
             cursory++;
 
             foreach (var match in res1)
@@ -437,10 +440,12 @@ namespace TheCrawler
                         Console.Write($"| {i++}. ");
                         Console.SetCursorPosition(4, cursory);
                         Console.Write($" {match.strHomeTeam} ");
-                        Console.SetCursorPosition(30, cursory);
+                        Console.SetCursorPosition(25, cursory);
                         Console.Write($" vs {match.strAwayTeam} ");
+                        Console.SetCursorPosition(50, cursory);
+                        Console.Write($" Est: {match.strResultEstimated}. ");
                         Console.SetCursorPosition(60, cursory);
-                        Console.Write($" Estimated: {match.strResultEstimated}. ");
+                        Console.Write($" {match.strGameType} ");
                         Console.SetCursorPosition(80, cursory);
                         Console.Write($"{match.dtDateTime} -|");
                         cursory++;
