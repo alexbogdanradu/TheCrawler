@@ -1,7 +1,5 @@
-﻿using OpenQA.Selenium.Chrome;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Xml.Serialization;
 using static TheCrawler.LeagueEnum;
 
 namespace TheCrawler
@@ -46,14 +44,14 @@ namespace TheCrawler
             NLEredivisie,
             RUPremierLeague,
             GRSUperLeague,
-            FRLnb,
-            ITLigaA,
-            RODiviziaA,
-            ESAcb,
-            USANba,
-            TRSuperLigi,
-            DEBbl,
-            USANcaa,
+            //FRLnb,
+            //ITLigaA,
+            //RODiviziaA,
+            //ESAcb,
+            //USANba,
+            //TRSuperLigi,
+            //DEBbl,
+            //USANcaa,
         }
 
         public static Dictionary<Leagues, string> dictLeagues = new Dictionary<Leagues, string>()
@@ -94,14 +92,14 @@ namespace TheCrawler
             {Leagues.NLEredivisie, "fotbal/olanda/eredivisie"},
             {Leagues.RUPremierLeague, "fotbal/rusia/premier-league"},
             {Leagues.GRSUperLeague, "fotbal/grecia/super-league"},
-            {Leagues.FRLnb, "baschet/franta/lnb"},
-            {Leagues.ITLigaA, "baschet/italia/liga-a"},
-            {Leagues.RODiviziaA, "baschet/romania/divizia-a"},
-            {Leagues.ESAcb, "baschet/spania/acb"},
-            {Leagues.USANba, "baschet/sua/nba"},
-            {Leagues.TRSuperLigi, "baschet/turcia/super-ligi"},
-            {Leagues.DEBbl, "baschet/germania/bbl"},
-            {Leagues.USANcaa, "baschet/sua/ncaa"},
+            //{Leagues.FRLnb, "baschet/franta/lnb"},
+            //{Leagues.ITLigaA, "baschet/italia/liga-a"},
+            //{Leagues.RODiviziaA, "baschet/romania/divizia-a"},
+            //{Leagues.ESAcb, "baschet/spania/acb"},
+            //{Leagues.USANba, "baschet/sua/nba"},
+            //{Leagues.TRSuperLigi, "baschet/turcia/super-ligi"},
+            //{Leagues.DEBbl, "baschet/germania/bbl"},
+            //{Leagues.USANcaa, "baschet/sua/ncaa"},
 
             //{Leagues.NONE, "placeholder"},
         };

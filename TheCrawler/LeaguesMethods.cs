@@ -1,15 +1,30 @@
-﻿using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using System;
+﻿
 using System.Collections.Generic;
-using System.Threading;
 using static TheCrawler.LeagueEnum;
 
 namespace TheCrawler
 {
     public partial class League
     {
-        public List<Match> DetermineBetability()
+        public List<Match> DetermineBetability(Algos algos)
+        {
+            switch (algos)
+            {
+                case Algos.OiganBet:
+                    return OiganBetAlgo();
+                case Algos.CristiBet:
+                    return CristiBetAlgo();
+                default:
+                    return null;
+            }
+        }
+
+        private List<Match> CristiBetAlgo()
+        {
+            return null;
+        }
+
+        private List<Match> OiganBetAlgo()
         {
             List<Match> results = new List<Match>();
 

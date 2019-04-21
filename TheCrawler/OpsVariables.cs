@@ -1,14 +1,16 @@
 ﻿using OpenQA.Selenium.Chrome;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace TheCrawler
 {
+    public enum Algos
+    {
+        OiganBet,
+        CristiBet
+    }
+
     public partial class Ops
     {
         public List<League> lglist;
@@ -17,6 +19,8 @@ namespace TheCrawler
         public ChromeOptions options;
         public StreamWriter writerToFile;
         public XmlSerializer serializer;
+        public int windowsWait;
+        public int triesNumber;
         public string filename;
 
         public Ops()
@@ -25,7 +29,9 @@ namespace TheCrawler
             playedmatches = new List<League>();
             serializer = new XmlSerializer(typeof(List<League>));
             options = new ChromeOptions();
-            options.AddArgument("headless");
+            //options.AddArgument("headless");
+            windowsWait = 5000;
+            triesNumber = 10;
         }
     }
 }

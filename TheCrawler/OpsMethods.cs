@@ -1,103 +1,109 @@
-﻿using OpenQA.Selenium;
+﻿using Newtonsoft.Json;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
 using static TheCrawler.LeagueEnum;
 
 namespace TheCrawler
 {
     public partial class Ops
     {
-        public void SerializeToFile(string path)
+        public void GetPlayedMatchesFromWeb()
         {
-            serializer.Serialize(new StreamWriter(path), lglist);
+            if (this.browser == null)
+            {
+                this.browser = new ChromeDriver(options);
+            }
+
+            this.InitAllPlayedMatches();
+
+            foreach (var item in playedmatches)
+            {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                Console.Write($"Getting standings for: {item.currentLeague}. ");
+                item.lsMatches.AddRange(GetPlayedGamesByLeagueFromWeb(item.currentLeague, ref browser));
+
+                stopwatch.Stop();
+                Console.WriteLine($"Page retrieval lasted {stopwatch.Elapsed.Milliseconds} mS.");
+            }
+
+            string path = $"flashscoredb_{playedmatches.Count}_playedmatches_{DateTime.Now.ToShortDateString().Replace(".", "")}.json";
+            path = path.Replace("/", "");
+
+            this.SerializeToFile(path, playedmatches);
         }
 
-        public void InitSpecificLeague(LeagueEnum.Leagues league)
+        public void GetMatchesAndStandingsFromWeb()
         {
-            lglist.Add(new League());
-            lglist[lglist.Count - 1].InitLeague(league);
+            if (this.browser == null)
+            {
+                this.browser = new ChromeDriver(options);
+            }
+
+            this.InitAllLeagues();
+
+            foreach (var item in lglist)
+            {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                Console.Write($"Getting matches for: {item.currentLeague}. ");
+                item.lsMatches.AddRange(GetMatchesByLeagueFromWeb(item.currentLeague, ref browser));
+
+                stopwatch.Stop();
+                Console.WriteLine($"Page retrieval lasted {stopwatch.Elapsed.Milliseconds} mS.");
+
+                stopwatch.Restart();
+                Console.Write($"Getting standings for: {item.currentLeague}. ");
+                item.lsStandings.AddRange(GetStandingsByLeagueFromWeb(item.currentLeague, ref browser));
+
+                stopwatch.Stop();
+                Console.WriteLine($"Page retrieval lasted {stopwatch.Elapsed.Milliseconds} mS.");
+            }
+
+            string path = $"flashscoredb_{this.lglist.Count}_leagues_{DateTime.Now.ToShortDateString().Replace(".", "")}.json";
+            path = path.Replace("/", "");
+
+            this.SerializeToFile(path, lglist);
         }
 
-        public void InitAllLeagues()
+        private void SerializeToFile(string path, Object list)
         {
+            string content = JsonConvert.SerializeObject(list);
+
+            using (StreamWriter sw = new StreamWriter(path))
+            {
+                sw.Write(content);
+            }
+        }
+
+        private void InitAllLeagues()
+        {
+            lglist = null;
+            lglist = new List<League>();
+
             foreach (LeagueEnum.Leagues lg in (LeagueEnum.Leagues[])Enum.GetValues(typeof(LeagueEnum.Leagues)))
             {
                 lglist.Add(new League());
-                playedmatches.Add(new League());
                 lglist[lglist.Count - 1].InitLeague(lg);
-                playedmatches[playedmatches.Count - 1].InitLeague(lg);
             }
         }
 
-        public void InitAllPlayedMatches()
+        private void InitAllPlayedMatches()
         {
+            playedmatches = null;
+            playedmatches = new List<League>();
+
             foreach (LeagueEnum.Leagues lg in (LeagueEnum.Leagues[])Enum.GetValues(typeof(LeagueEnum.Leagues)))
             {
                 playedmatches.Add(new League());
                 playedmatches[playedmatches.Count - 1].InitLeague(lg);
-            }
-        }
-
-        public void GetLatestMatchesAndStandingsFromWeb(ref ChromeDriver _driver)
-        {
-            if (this.browser == null)
-            {
-                this.browser = new ChromeDriver(options);
-            }
-
-            foreach (var item in this.lglist)
-            {
-                item.lsMatches.AddRange(GetGamesByLeagueFromWeb(item.currentLeague, ref _driver));
-                item.lsStandings.AddRange(GetStandingsByLeagueFromWeb(item.currentLeague, ref _driver));
-            }
-        }
-
-        public List<Match> FillActualScore(List<Match> res2)
-        {
-            List<Match> result = new List<Match>();
-
-            foreach (var match2 in res2)
-            {
-                if (match2.iAwayScore != match2.iHomeScore)
-                {
-                    if (match2.iHomeScore > match2.iAwayScore)
-                    {
-                        match2.strResultActual = "1";
-                        result.Add(match2);
-                    }
-                    else
-                    {
-                        match2.strResultActual = "2";
-                        result.Add(match2);
-                    }
-                }
-                else
-                {
-                    match2.strResultActual = "-1";
-                    result.Add(match2);
-                }
-            }
-
-            return result;
-        }
-
-        public void GetPlayedMatchesFromWeb(ref ChromeDriver _driver)
-        {
-            if (this.browser == null)
-            {
-                this.browser = new ChromeDriver(options);
-            }
-
-            foreach (var item in this.playedmatches)
-            {
-                item.lsMatches.AddRange(GetPlayedGamesByLeagueFromWeb(item.currentLeague, ref _driver));
             }
         }
 
@@ -110,7 +116,7 @@ namespace TheCrawler
 
             List<Match> matches = new List<Match>();
 
-            int tries = 1000;
+            int tries = triesNumber;
 
             while (tries-- > 1)
             {
@@ -118,7 +124,7 @@ namespace TheCrawler
 
                 try
                 {
-                    _driver.Navigate().GoToUrl($"https://www.flashscore.ro/fotbal/{dictLeagues[_league]}/rezultate/");
+                    _driver.Navigate().GoToUrl($"https://www.flashscore.ro/{dictLeagues[_league]}/rezultate/");
 
                     IWebElement table = _driver.FindElement(By.TagName("tbody"));
 
@@ -188,7 +194,7 @@ namespace TheCrawler
                 }
                 else
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(50);
                 }
             }
 
@@ -204,7 +210,7 @@ namespace TheCrawler
 
             List<string> standings = new List<string>();
 
-            int tries = 1000;
+            int tries = triesNumber;
 
             while (tries-- > 1)
             {
@@ -237,14 +243,14 @@ namespace TheCrawler
                 }
                 else
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(50);
                 }
             }
 
             return standings;
         }
 
-        private List<Match> GetGamesByLeagueFromWeb(LeagueEnum.Leagues _league, ref ChromeDriver _driver)
+        private List<Match> GetMatchesByLeagueFromWeb(LeagueEnum.Leagues _league, ref ChromeDriver _driver)
         {
             if (this.browser == null)
             {
@@ -253,7 +259,7 @@ namespace TheCrawler
 
             List<Match> matches = new List<Match>();
 
-            int tries = 1000;
+            int tries = triesNumber;
 
             while (tries-- > 1)
             {
@@ -325,136 +331,21 @@ namespace TheCrawler
                 }
                 else
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(50);
                 }
             }
 
             return matches;
         }
 
-        public void GetLatestMatchesAndStandingsFromFile(string _file)
-        {
-            StreamReader streamReader = new StreamReader(_file);
-            lglist.AddRange((List<League>)serializer.Deserialize(streamReader));
-        }
-
-        public void GetPlayedMatchesFromFile(string _file)
-        {
-            StreamReader streamReader = new StreamReader(_file);
-            playedmatches.AddRange((List<League>)serializer.Deserialize(streamReader));
-        }
-
-        public void SerializeLeaguesToFile(string _path)
+        private void SerializeLeaguesToFile(string _path)
         {
             serializer.Serialize(new StreamWriter(_path), lglist);
         }
 
-        public void SerializePlayedMatchesToFile(string _path)
+        private void SerializePlayedMatchesToFile(string _path)
         {
             serializer.Serialize(new StreamWriter(_path), playedmatches);
-        }
-
-        public void SerializeToFiles()
-        {
-
-        }
-
-        public List<Match> DetermineBetabilityForFutureMatches()
-        {
-            List<Match> result = new List<Match>();
-
-            foreach (var league in this.lglist)
-            {
-                if (league.lsStandings.Count != 0)
-                {
-                    result.AddRange(league.DetermineBetability());
-                }
-            }
-
-            return result;
-        }
-
-        public List<Match> DetermineBetabilityForPastMatches(List<League> standings)
-        {
-            List<Match> result = new List<Match>();
-
-            foreach (var played in playedmatches)
-            {
-                foreach (var notplayed in standings)
-                {
-                    if (notplayed.currentLeague == played.currentLeague)
-                    {
-                        played.lsStandings.AddRange(notplayed.lsStandings);
-                    }
-                }
-            }
-
-            foreach (var league in this.playedmatches)
-            {
-                if (league.lsStandings.Count != 0)
-                {
-                    league.DetermineBetability();
-
-                    foreach (var match in league.lsMatches)
-                    {
-                        if (match.strResultEstimated != "-1")
-                        {
-                            result.Add(match);
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        public void Clean()
-        {
-            browser.Dispose();
-        }
-
-        public void ShowFutureWinningMatchesByDaysFromNow(int days, List<Match> res1)
-        {
-            int i = 1;
-            int cursory = 0;
-            DateTime today = DateTime.Now;
-
-            Console.WriteLine($"|-GAMES-IN THE NEXT-{days}-DAYS---------------------------------------------------------------------------|");
-
-            cursory++;
-
-            foreach (var match in res1)
-            {
-                TimeSpan offset = new TimeSpan(days, 0, 0, 0);
-                DateTime date = DateTime.Now.Date;
-
-                if (days == -1)
-                {
-                    Console.WriteLine($"| {i++}. {match.strHomeTeam}  vs {match.strAwayTeam}. Estimated: {match.strResultEstimated}. {match.dtDateTime}");
-                }
-                else
-                {
-                    if ((match.dtDateTime > DateTime.Now) && (match.dtDateTime < date + offset))
-                    {
-                        Console.SetCursorPosition(0, cursory);
-                        Console.Write($"| {i++}. ");
-                        Console.SetCursorPosition(4, cursory);
-                        Console.Write($" {match.strHomeTeam} ");
-                        Console.SetCursorPosition(25, cursory);
-                        Console.Write($" vs {match.strAwayTeam} ");
-                        Console.SetCursorPosition(50, cursory);
-                        Console.Write($" Est: {match.strResultEstimated}. ");
-                        Console.SetCursorPosition(60, cursory);
-                        Console.Write($" {match.strGameType} ");
-                        Console.SetCursorPosition(80, cursory);
-                        Console.Write($"{match.dtDateTime} -|");
-                        cursory++;
-                    }
-                }
-            }
-
-            Console.SetCursorPosition(0, cursory);
-            Console.WriteLine("|-END------------------------------------------------------------------------------------------------|");
         }
     }
 }
