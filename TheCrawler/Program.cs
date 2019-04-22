@@ -1,52 +1,57 @@
-﻿using OpenQA.Selenium.Chrome;
+﻿using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Mail;
+using System.Text;
 using System.Xml.Serialization;
 
 namespace TheCrawler
 {
-    class Program
+    partial class Program
     {
         static void Main(string[] args)
         {
             Console.SetWindowSize(110, 30);
             Console.SetBufferSize(110, 10000);
             DateTime start = DateTime.Now;
-            string timestamp = start.ToShortDateString().Replace(".", "");
-            timestamp = timestamp.Replace("/", "");
 
-            Ops op1 = new Ops();
-            //op1.browser = new ChromeDriver();
+            string date = start.Date.ToString();
 
-            /////////////////////////////////////////////////////////////////////////////////////////           1. GET MATCHES AND STANDINGS FROM WEB AND STORE THEM TO XML
-            //op1.InitAllLeagues();
-            //Console.WriteLine($"Started at {start.ToShortTimeString().ToString()}");
-            //Console.WriteLine("RUNNING IN HEADLESS MODE..");
-            //op1.GetLatestMatchesAndStandingsFromWeb(ref op1.browser);
-            //op1.SerializeToFile($"flashscoredb_{op1.lglist.Count}_leagues_{timestamp}.xml");
-            //op1.Clean();
+            ChromeDriver browser = new ChromeDriver();
+            //ChromeOptions options;
 
-            /////////////////////////////////////////////////////////////////////////////////////////           2. GET MATCHES AND STANDINGS FROM THE FILE
-            op1.GetLatestMatchesAndStandingsFromFile(@"flashscoredb_44_leagues_1272019.xml");
+            browser.Navigate().GoToUrl($"https://www.casapariurilor.ro/Sports/offer?date={date}.");
 
-            /////////////////////////////////////////////////////////////////////////////////////////           3. ESTIMATE THE PROGNOSTIC FOR FUTURE GAMES
-            List<Match> res1 = op1.DetermineBetabilityForFutureMatches();
+            IWebElement table = browser.FindElement(By.TagName("tbody"));
 
-            /////////////////////////////////////////////////////////////////////////////////////////           4. SHOW MATCHES TO BET
-            op1.ShowFutureWinningMatchesByDaysFromNow(1, res1); //-1 for all, 3 for 3 days
+            ICollection<IWebElement> home = table.FindElements(By.ClassName("padl"));
+            ICollection<IWebElement> away = table.FindElements(By.ClassName("padr"));
+            ICollection<IWebElement> score = table.FindElements(By.ClassName("score"));
+            ICollection<IWebElement> time = table.FindElements(By.ClassName("time"));
 
-            /////////////////////////////////////////////////////////////////////////////////////////           1. GET PLAYED MATCHES FROM WEB AND STORE THEM TO XML
-            //op1.InitAllLeagues();
-            //op1.GetPlayedMatchesFromWeb(ref op1.browser);
-            //op1.SerializePlayedMatchesToFile($"flashscoredb_{op1.lglist.Count}_playedmatches_{DateTime.Now.ToShortDateString().Replace(".", "")}.xml");
-            //op1.Clean();
+            string password;
 
-            /////////////////////////////////////////////////////////////////////////////////////////           2. GET PLAYED MATCHES FROM THE FILE
-            //op1.GetPlayedMatchesFromFile("flashscoredb_37_playedmatches_23012019.xml");
+            using (StreamReader sr = new StreamReader("password.txt"))
+            {
+                password = sr.ReadToEnd();
+            }
 
-            /////////////////////////////////////////////////////////////////////////////////////////           3. ESTIMATE THE PROGNOSTIC FOR PAST GAMES
-            //List<Match> res2 = op1.DetermineBetabilityForPastMatches(op1.lglist);
+            SmtpClient client = new SmtpClient();
+            client.Port = 587;
+            client.Host = "smtp.gmail.com";
+            client.EnableSsl = true;
+            client.Timeout = 10000;
+            client.DeliveryMethod = SmtpDeliveryMethod.Network;
+            client.UseDefaultCredentials = false;
+            client.Credentials = new System.Net.NetworkCredential("alex.bogdan.radu@gmail.com", password);
+
+            MailMessage mm = new MailMessage("alex.bogdan.radu@gmail.com", "alex_radu@live.com", "test", "test");
+            mm.BodyEncoding = UTF8Encoding.UTF8;
+            mm.DeliveryNotificationOptions = DeliveryNotificationOptions.OnFailure;
+
+            client.Send(mm);
 
             DateTime stop = DateTime.Now;
             TimeSpan diff = stop - start;

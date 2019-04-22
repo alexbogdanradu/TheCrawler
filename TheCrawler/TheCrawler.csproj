@@ -83,12 +83,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LeaguesMethods.cs" />
-    <Compile Include="LeaguesVariables.cs" />
-    <Compile Include="OpsMethods.cs" />
-    <Compile Include="OpsVariables.cs" />
+    <Compile Include="Match.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="userpass.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
