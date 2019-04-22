@@ -1,10 +1,12 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Mail;
 using System.Text;
+using System.Threading;
 using System.Xml.Serialization;
 
 namespace TheCrawler
@@ -17,19 +19,60 @@ namespace TheCrawler
             Console.SetBufferSize(110, 10000);
             DateTime start = DateTime.Now;
 
-            string date = start.Date.ToString();
+            string date = start.Date.ToString("dd.MM.yyyy");
 
             ChromeDriver browser = new ChromeDriver();
             //ChromeOptions options;
 
+            List<Match> lsFootball = new List<Match>();
+
             browser.Navigate().GoToUrl($"https://www.casapariurilor.ro/Sports/offer?date={date}.");
 
-            IWebElement table = browser.FindElement(By.TagName("tbody"));
+            Thread.Sleep(5000);
 
-            ICollection<IWebElement> home = table.FindElements(By.ClassName("padl"));
-            ICollection<IWebElement> away = table.FindElements(By.ClassName("padr"));
-            ICollection<IWebElement> score = table.FindElements(By.ClassName("score"));
-            ICollection<IWebElement> time = table.FindElements(By.ClassName("time"));
+            browser.FindElement(By.CssSelector("#retail-modal > div > div > div > button")).Click();
+
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    Thread.Sleep(2000);
+            //    ((IJavaScriptExecutor)browser).ExecuteScript("window.scrollTo(0, document.body.scrollHeight - 150)");
+            //}
+
+            IWebElement table = browser.FindElement(By.ClassName("betting-tables"));
+
+            ICollection<IWebElement> soccer = table.FindElements(By.ClassName("sport-group-type-soccer"));
+
+            foreach (var item in soccer)
+            {
+                ICollection<IWebElement> homeTeams = item.FindElements(By.CssSelector("[class='event-header-team top']"));
+                ICollection<IWebElement> awayTeams = item.FindElements(By.CssSelector("[class='event-header-team bottom']"));
+                ICollection<IWebElement> dates = item.FindElements(By.CssSelector("[class='event-header-date-date']")); //plain text
+                ICollection<IWebElement> cote = item.FindElements(By.CssSelector("[class='bet-pick bet-pick-3 ']")); //only first 5
+
+                List<Match> localMatches = new List<Match>();
+
+                for (int i = 0; i < homeTeams.Count; i++)
+                {
+                    localMatches.Add(new Match());
+                }
+
+                foreach (var hTeam in homeTeams)
+                {
+                    localMatches[homeTeams]
+                }
+            }
+
+            //foreach (var socc_item in soccer)
+            //{
+            //    ICollection<IWebElement> matches = socc_item.FindElements(By.ClassName("event-layout"));
+
+            //    foreach (var match in matches)
+            //    {
+            //        ICollection<IWebElement> homeTeams = match.FindElements(By.CssSelector("[class='event-header-team top']"));
+            //        ICollection<IWebElement> awayTeams = match.FindElements(By.CssSelector("[class='event-header-team bottom']"));
+            //    }
+            //}
+
 
             string password;
 

@@ -19,8 +19,9 @@ namespace TheCrawler
 
     public class Match
     {
-        public string Teams { get; set; }
-        public DateTime PlayingDate { get; set; }
+        public string HomeTeam { get; set; }
+        public string AwayTeam { get; set; }
+        public string PlayingDate { get; set; }
         public Dictionary<Cote, double> Cote { get; set; }
     }
 }
