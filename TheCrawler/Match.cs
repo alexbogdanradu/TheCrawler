@@ -6,23 +6,14 @@ using System.Threading.Tasks;
 
 namespace TheCrawler
 {
-    public enum Cote
-    {
-        Cota_1,
-        Cota_X,
-        Cota_2,
-        Cota_1X,
-        Cota_X2,
-        Cota_12,
-        Cota_F2
-    }
-
     public class Match
     {
         public string HomeTeam { get; set; }
         public string AwayTeam { get; set; }
         public string PlayingDate { get; set; }
-        //public Dictionary<Cote, double> Cote { get; set; }
+        public Dictionary<string, double> Dict { get; set; }
         public List<double> Cote { get; set; }
+        public string Bet01_Key { get; set; }
+        public double Bet01_Val { get; set; }
     }
 }
