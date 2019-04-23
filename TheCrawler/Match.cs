@@ -22,6 +22,7 @@ namespace TheCrawler
         public string HomeTeam { get; set; }
         public string AwayTeam { get; set; }
         public string PlayingDate { get; set; }
-        public Dictionary<Cote, double> Cote { get; set; }
+        //public Dictionary<Cote, double> Cote { get; set; }
+        public List<double> Cote { get; set; }
     }
 }

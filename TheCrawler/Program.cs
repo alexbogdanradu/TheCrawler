@@ -56,23 +56,56 @@ namespace TheCrawler
                     localMatches.Add(new Match());
                 }
 
-                foreach (var hTeam in homeTeams)
+                int iterator = 0;
+
+                foreach (var homeTeam in homeTeams)
                 {
-                    localMatches[homeTeams]
+                    localMatches[iterator].HomeTeam = homeTeam.Text;
+                    iterator++;
                 }
+
+                iterator = 0;
+
+                foreach (var awayTeam in awayTeams)
+                {
+                    localMatches[iterator].AwayTeam = awayTeam.Text;
+                    iterator++;
+                }
+
+                iterator = 0;
+
+                foreach (var _date in dates)
+                {
+                    localMatches[iterator].PlayingDate = _date.Text;
+                    iterator++;
+                }
+
+                iterator = 0;
+
+                List<int> pointers = new List<int>();
+
+                int divider = cote.Count / localMatches.Count;
+
+                for (int i = 0; i < localMatches.Count; i++)
+                {
+                    pointers.Add(divider * i);
+                }
+
+                for (int i = 0; i < pointers.Count; i++)
+                {
+                    foreach (var cota in cote)
+                    {
+                        if (iterator == pointers[i])
+                        {
+                            localMatches[i].Cote.Add(double.Parse(cota.Text));
+                        }
+                        iterator++;
+                    }
+                    iterator = 0;
+                }
+
+                lsFootball.AddRange(localMatches);
             }
-
-            //foreach (var socc_item in soccer)
-            //{
-            //    ICollection<IWebElement> matches = socc_item.FindElements(By.ClassName("event-layout"));
-
-            //    foreach (var match in matches)
-            //    {
-            //        ICollection<IWebElement> homeTeams = match.FindElements(By.CssSelector("[class='event-header-team top']"));
-            //        ICollection<IWebElement> awayTeams = match.FindElements(By.CssSelector("[class='event-header-team bottom']"));
-            //    }
-            //}
-
 
             string password;
 
