@@ -85,6 +85,10 @@
   <ItemGroup>
     <Compile Include="Match.cs" />
     <Compile Include="Ops.cs" />
+    <Compile Include="Ops_BTN.cs" />
+    <Compile Include="Ops_CP.cs" />
+    <Compile Include="Ops_Methods.cs" />
+    <Compile Include="Ops_Obsolete.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
