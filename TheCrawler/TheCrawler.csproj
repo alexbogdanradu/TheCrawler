@@ -81,6 +81,9 @@
     <Reference Include="WebDriver, Version=3.141.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Selenium.WebDriver.3.141.0\lib\net45\WebDriver.dll</HintPath>
     </Reference>
+    <Reference Include="WebDriver.Support, Version=3.141.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Selenium.Support.3.141.0\lib\net45\WebDriver.Support.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Match.cs" />
@@ -88,6 +91,7 @@
     <Compile Include="Ops_BTN.cs" />
     <Compile Include="Ops_CP.cs" />
     <Compile Include="Ops_Methods.cs" />
+    <Compile Include="Ops_NB.cs" />
     <Compile Include="Ops_Obsolete.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
