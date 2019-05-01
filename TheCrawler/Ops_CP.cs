@@ -131,32 +131,32 @@ namespace TheCrawler
                         iterator++;
                     }
 
-                    localMatches[i].Dict = new Dictionary<string, double>();
+                    localMatches[i].Bets = new Dictionary<string, double>();
 
                     for (int j = 0; j < localMatches[i].Cote.Count; j++)
                     {
                         switch (j)
                         {
                             case 0:
-                                localMatches[i].Dict.Add("1", localMatches[i].Cote[j]);
+                                localMatches[i].Bets.Add("1", localMatches[i].Cote[j]);
                                 break;
                             case 1:
-                                localMatches[i].Dict.Add("X", localMatches[i].Cote[j]);
+                                localMatches[i].Bets.Add("X", localMatches[i].Cote[j]);
                                 break;
                             case 2:
-                                localMatches[i].Dict.Add("2", localMatches[i].Cote[j]);
+                                localMatches[i].Bets.Add("2", localMatches[i].Cote[j]);
                                 break;
                             case 3:
-                                localMatches[i].Dict.Add("1X", localMatches[i].Cote[j]);
+                                localMatches[i].Bets.Add("1X", localMatches[i].Cote[j]);
                                 break;
                             case 4:
-                                localMatches[i].Dict.Add("X2", localMatches[i].Cote[j]);
+                                localMatches[i].Bets.Add("X2", localMatches[i].Cote[j]);
                                 break;
                             case 5:
-                                localMatches[i].Dict.Add("12", localMatches[i].Cote[j]);
+                                localMatches[i].Bets.Add("12", localMatches[i].Cote[j]);
                                 break;
                             case 6:
-                                localMatches[i].Dict.Add("F2", localMatches[i].Cote[j]);
+                                localMatches[i].Bets.Add("F2", localMatches[i].Cote[j]);
                                 break;
                             default:
                                 break;

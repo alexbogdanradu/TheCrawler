@@ -24,7 +24,7 @@ namespace TheCrawler
 
             Ops ops = new Ops();
 
-            //List<Match> matches_cp = ops.FetchMatches_CP();
+            List<Match> matches_cp = ops.FetchMatches_CP();
             List<Match> matches_btn = ops.FetchMatches_BTN();
 
             //List<Match> foundMatches = ops.FindMatchesByAlgo(matches_cp);
