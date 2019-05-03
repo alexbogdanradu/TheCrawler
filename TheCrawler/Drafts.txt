@@ -43,7 +43,7 @@
             AUALeague,
         }
 
-        public static Dictionary<Leagues, string> dictLeagues = new Dictionary<Leagues, string>()
+        public static Betsionary<Leagues, string> BetsLeagues = new Betsionary<Leagues, string>()
         {
             //{Leagues.GBPremierLeague, "anglia/premier-league"},
             {Leagues.GBChampionship, "anglia/championship"},

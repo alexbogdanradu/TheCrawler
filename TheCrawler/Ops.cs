@@ -12,22 +12,22 @@ namespace TheCrawler
 {
     public class Ops
     {
-        public List<Match> lsMatches { get; set; }
-        public List<Match> lsBet1 { get; set; }
+        public List<CPMatch> LsMatches { get; set; }
+        public List<CPMatch> LsBet1 { get; set; }
 
         public Ops()
         {
-            lsMatches = new List<Match>();
-            lsBet1 = new List<Match>();
+            LsMatches = new List<CPMatch>();
+            LsBet1 = new List<CPMatch>();
         }
 
-        public List<Match> FetchMatches()
+        public List<CPMatch> FetchMatches()
         {
             string date = DateTime.Now.ToString("dd.MM.yyyy");
 
             ChromeDriver browser = new ChromeDriver();
 
-            List<Match> lsFootball = new List<Match>();
+            List<CPMatch> lsFootball = new List<CPMatch>();
 
             browser.Navigate().GoToUrl($"https://www.casapariurilor.ro/Sports/offer?date={date}.");
 
@@ -64,7 +64,7 @@ namespace TheCrawler
                 ICollection<IWebElement> dates = item.FindElements(By.CssSelector("[class='event-header-date-date']")); //plain text
                 ICollection<IWebElement> cote = item.FindElements(By.CssSelector("[class='bet-pick bet-pick-3 ']")); //only first 5
 
-                List<Match> localMatches = new List<Match>();
+                List<CPMatch> localMatches = new List<CPMatch>();
 
                 if (homeTeams.Count == 0)
                 {
@@ -73,7 +73,7 @@ namespace TheCrawler
 
                 for (int i = 0; i < homeTeams.Count; i++)
                 {
-                    localMatches.Add(new Match());
+                    localMatches.Add(new CPMatch());
                 }
 
                 int iterator = 0;
@@ -94,13 +94,22 @@ namespace TheCrawler
 
                 iterator = 0;
 
-                //foreach (var _date in dates)
-                //{
-                //    localMatches[iterator].PlayingDate = _date.Text;
-                //    iterator++;
-                //}
+                foreach (var _date in dates)
+                {
+                    string time = _date.Text;
+                    time = time.Substring(time.IndexOf(" ") + 1, time.Length - time.IndexOf(" ") - 1);
 
-                //iterator = 0;
+                    DateTime matchTime = DateTime.ParseExact(time, "HH:mm", null);
+                    if (matchTime < DateTime.Now)
+                    {
+                        matchTime = matchTime.AddDays(1);
+                    }
+
+                    localMatches[iterator].PlayingDate = matchTime;
+                    iterator++;
+                }
+
+                iterator = 0;
 
                 List<int> pointers = new List<int>();
 
@@ -141,32 +150,32 @@ namespace TheCrawler
                         iterator++;
                     }
 
-                    localMatches[i].Dict = new Dictionary<string, double>();
+                    localMatches[i].Bets = new Dictionary<string, double>();
 
                     for (int j = 0; j < localMatches[i].Cote.Count; j++)
                     {
                         switch (j)
                         {
                             case 0:
-                                localMatches[i].Dict.Add("1", localMatches[i].Cote[j]);
+                                localMatches[i].Bets.Add("1", localMatches[i].Cote[j]);
                                 break;
                             case 1:
-                                localMatches[i].Dict.Add("X", localMatches[i].Cote[j]);
+                                localMatches[i].Bets.Add("X", localMatches[i].Cote[j]);
                                 break;
                             case 2:
-                                localMatches[i].Dict.Add("2", localMatches[i].Cote[j]);
+                                localMatches[i].Bets.Add("2", localMatches[i].Cote[j]);
                                 break;
                             case 3:
-                                localMatches[i].Dict.Add("1X", localMatches[i].Cote[j]);
+                                localMatches[i].Bets.Add("1X", localMatches[i].Cote[j]);
                                 break;
                             case 4:
-                                localMatches[i].Dict.Add("X2", localMatches[i].Cote[j]);
+                                localMatches[i].Bets.Add("X2", localMatches[i].Cote[j]);
                                 break;
                             case 5:
-                                localMatches[i].Dict.Add("12", localMatches[i].Cote[j]);
+                                localMatches[i].Bets.Add("12", localMatches[i].Cote[j]);
                                 break;
                             case 6:
-                                localMatches[i].Dict.Add("F2", localMatches[i].Cote[j]);
+                                localMatches[i].Bets.Add("F2", localMatches[i].Cote[j]);
                                 break;
                             default:
                                 break;
@@ -183,24 +192,24 @@ namespace TheCrawler
             return lsFootball;
         }
 
-        public List<Match> FindMatchesByAlgo(List<Match> matches)
+        public List<CPMatch> FindMatchesByAlgo(List<CPMatch> matches)
         {
             foreach (var item in matches)
             {
-                item.Bet01_Key = item.Dict.Aggregate((l, r) => l.Value < r.Value ? l : r).Key;
-                item.Bet01_Val = item.Dict.Aggregate((l, r) => l.Value < r.Value ? l : r).Value;
+                item.BetMin_Key = item.Bets.Aggregate((l, r) => l.Value < r.Value ? l : r).Key;
+                item.BetMin_Val = item.Bets.Aggregate((l, r) => l.Value < r.Value ? l : r).Value;
 
-                item.Bet01_Diff12 = item.Dict["1"] - item.Dict["2"];
-                item.Bet01_DiffX1 = item.Dict["X"] - item.Dict["1"];
-                item.Bet01_Diff2X = item.Dict["2"] - item.Dict["X"];
+                item.Bet01_Diff12 = Math.Abs(item.Bets["1"] - item.Bets["2"]);
+                item.Bet01_DiffX1 = Math.Abs(item.Bets["X"] - item.Bets["1"]);
+                item.Bet01_Diff2X = Math.Abs(item.Bets["2"] - item.Bets["X"]);
             }
 
-            lsBet1.AddRange(matches.OrderBy(o => o.Bet01_Val).ToList());
+            LsBet1.AddRange(matches.OrderBy(o => o.Bet01_Diff12).Reverse().ToList());
 
-            return lsBet1;
+            return LsBet1;
         }
 
-        public string PrepareBody(List<Match> matches)
+        public string PrepareBody(List<CPMatch> matches)
         {
             string content = "";
             content = "Meciurile zilei:" + Environment.NewLine;
@@ -216,33 +225,34 @@ namespace TheCrawler
                 content += " vs ";
                 content += match.AwayTeam;
                 content += Environment.NewLine;
-                content += "Cota minima: ";
-                content += match.Bet01_Key;
-                content += ", ";
-                content += match.Bet01_Val;
+                content += match.PlayingDate.ToShortTimeString();
                 content += Environment.NewLine;
-
-                content += "1 - 2 = ";
+                content += "Cota minima: ";
+                content += match.BetMin_Key;
+                content += ", ";
+                content += match.BetMin_Val;
+                content += Environment.NewLine;
+                content += "1 vs 2 = ";
                 content += match.Bet01_Diff12;
                 content += Environment.NewLine;
-                content += "X - 1 = ";
+                content += "X vs 1 = ";
                 content += match.Bet01_DiffX1;
                 content += Environment.NewLine;
-                content += "2 - X = ";
+                content += "2 vs X = ";
                 content += match.Bet01_Diff2X;
                 content += Environment.NewLine;
-
                 content += "------------------";
                 content += Environment.NewLine;
 
-                foreach (var dict in match.Dict)
+                foreach (var Bets in match.Bets)
                 {
-                    content += dict.Key;
+                    content += Bets.Key;
                     content += " -> ";
-                    content += dict.Value;
+                    content += Bets.Value;
                     content += Environment.NewLine;
                 }
-
+                content += "------------------";
+                content += Environment.NewLine;
                 content += Environment.NewLine;
             }
 
@@ -251,18 +261,22 @@ namespace TheCrawler
 
         public void SendMail(string content)
         {
-            SmtpClient client = new SmtpClient();
-            client.Port = 587;
-            client.Host = "smtp.gmail.com";
-            client.EnableSsl = true;
-            client.Timeout = 10000;
-            client.DeliveryMethod = SmtpDeliveryMethod.Network;
-            client.UseDefaultCredentials = false;
-            client.Credentials = new System.Net.NetworkCredential("oiganbet@gmail.com", "OiganBet1234+");
+            SmtpClient client = new SmtpClient
+            {
+                Port = 587,
+                Host = "smtp.gmail.com",
+                EnableSsl = true,
+                Timeout = 10000,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                Credentials = new System.Net.NetworkCredential("oiganbet@gmail.com", "OiganBet1234+")
+            };
 
-            List<MailMessage> mails = new List<MailMessage>();
-            mails.Add(new MailMessage("oiganbet@gmail.com", "alex_radu@live.com", "Daily Report", content));
-            mails.Add(new MailMessage("oiganbet@gmail.com", "alex.bogdan.radu@gmail.com", "Daily Report", content));
+            List<MailMessage> mails = new List<MailMessage>
+            {
+                new MailMessage("oiganbet@gmail.com", "alex_radu@live.com", "Daily Report", content),
+                new MailMessage("oiganbet@gmail.com", "alex.bogdan.radu@gmail.com", "Daily Report", content)
+            };
 
             foreach (var mail in mails)
             {
