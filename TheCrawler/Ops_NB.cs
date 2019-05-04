@@ -16,6 +16,8 @@ namespace TheCrawler
     {
         public List<Match> FetchMatches_NB()
         {
+            int i = 0;
+
             string date = DateTime.Now.ToString("dd.MM.yyyy");
 
             ChromeDriver browser = new ChromeDriver();
@@ -24,24 +26,57 @@ namespace TheCrawler
 
             browser.Navigate().GoToUrl($"https://sport.netbet.ro/fotbal/");
 
-            Thread.Sleep(30000);
+            Thread.Sleep(20000);
 
-            IWebElement games = browser.FindElement(By.ClassName("events-container"));
+            ICollection<IWebElement> games = browser.FindElements(By.ClassName("event-wrapper-inner"));
 
-            ICollection<IWebElement> game = browser.FindElements(By.ClassName("event-wrapper-inner"));
+            browser.ExecuteScript("var p=window.XMLHttpRequest.prototype; p.open=p.send=p.setRequestHeader=function(){};");
 
-            foreach (var item in game)
+            foreach (var item in games)
             {
-                IWebElement HomeTeam = item.FindElement(By.CssSelector("[class='event-details-row event-details-row-team-a clearfix']"));
-                IWebElement AwayTeam = item.FindElement(By.CssSelector("[class='event-details-row event-details-row-team-b clearfix']"));
+                Console.WriteLine(i++);
+                bool somethingwrong = false;
 
-                ICollection<IWebElement> odds = item.FindElements(By.CssSelector("[class='bet-button-wrap counted']"));
+                int tries = 30;
+                while (tries-- > 0)
+                {
+                    try
+                    {
+                        somethingwrong = false;
+                        IWebElement HomeTeamMule = item.FindElement(By.CssSelector("[class='event-details-team-name event-details-team-a']"));
+                        IWebElement AwayTeamMule = item.FindElement(By.CssSelector("[class='event-details-team-name event-details-team-a']"));
+                        ICollection<IWebElement> oddsMule = item.FindElements(By.CssSelector("[class='bet-buttons-row ']"));
+                    }
+                    catch (Exception)
+                    {
+                        somethingwrong = true;
+                    }
+
+                    if (somethingwrong)
+                    {
+                        Thread.Sleep(10);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if (tries == -1)
+                {
+                    break;
+                }
+
+                IWebElement HomeTeam = item.FindElement(By.CssSelector("[class='event-details-team-name event-details-team-a']"));
+                IWebElement AwayTeam = item.FindElement(By.CssSelector("[class='event-details-team-name event-details-team-b']"));
+                ICollection<IWebElement> odds = item.FindElements(By.CssSelector("[class='bet-buttons-row ']"));
 
                 IWebElement odd_1;
                 IWebElement odd_X;
                 IWebElement odd_2;
 
                 int iterator = 0;
+
                 foreach (var odd in odds)
                 {
                     switch (iterator)
@@ -67,10 +102,11 @@ namespace TheCrawler
                 lsFootball.Last().HomeTeam = HomeTeam.Text;
                 lsFootball.Last().AwayTeam = AwayTeam.Text;
 
+                Console.Write(AwayTeam.Text);
+
                 lsFootball.Last().Bets = new Dictionary<string, double>();
                 lsFootball.Last().Bets.Add("1", 0);
             }
-
             return lsFootball;
         }
     }
