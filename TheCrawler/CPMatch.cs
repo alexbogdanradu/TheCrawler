@@ -16,5 +16,6 @@ namespace TheCrawler
         public List<double> Cote { get; set; }
         public string Bet02_Key { get; internal set; }
         public double Bet02_Val { get; internal set; }
+        public double MatchPercent { get; set; }
     }
 }

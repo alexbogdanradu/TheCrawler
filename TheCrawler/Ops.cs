@@ -2,6 +2,7 @@
 using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
@@ -38,9 +39,9 @@ namespace TheCrawler
 #if DEBUG
 
 #else
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 120; i++)
             {
-                Thread.Sleep(3000);
+                Thread.Sleep(1000);
                 ((IJavaScriptExecutor)browser).ExecuteScript("window.scrollTo(0, document.body.scrollHeight - 150)");
             }
 #endif
@@ -50,8 +51,18 @@ namespace TheCrawler
 
             ICollection<IWebElement> soccer = table.FindElements(By.ClassName("sport-group-type-soccer"));
 
+            Console.WriteLine(soccer.Count + " matches found");
+
+            int matchNo = 0;
+
             foreach (var item in soccer)
             {
+                Console.WriteLine($"Loading match: {matchNo++}");
+
+                Stopwatch sw = new Stopwatch();
+
+                sw.Start();
+
                 ICollection<IWebElement> bets_type_1 = item.FindElements(By.CssSelector("div[data-pick='1']"));
                 ICollection<IWebElement> bets_type_X = item.FindElements(By.CssSelector("div[data-pick='X']"));
                 ICollection<IWebElement> bets_type_2 = item.FindElements(By.CssSelector("div[data-pick='2']"));
@@ -63,6 +74,14 @@ namespace TheCrawler
                 ICollection<IWebElement> awayTeams = item.FindElements(By.CssSelector("[class='event-header-team bottom']"));
                 ICollection<IWebElement> dates = item.FindElements(By.CssSelector("[class='event-header-date-date']")); //plain text
                 ICollection<IWebElement> cote = item.FindElements(By.CssSelector("[class='bet-pick bet-pick-3 ']")); //only first 5
+
+                sw.Stop();
+
+                Console.WriteLine($"Time spent while retrieving elements: {sw.ElapsedMilliseconds}, {homeTeams.Count} matches in this group.");
+
+                Stopwatch sw2 = new Stopwatch();
+
+                sw.Start();
 
                 List<CPMatch> localMatches = new List<CPMatch>();
 
@@ -133,7 +152,7 @@ namespace TheCrawler
                         {
                             if (cota.Text == "")
                             {
-                                localMatches[i].Cote.Add(20);
+                                localMatches[i].Cote.Add(0);
                             }
                             else
                             {
@@ -183,8 +202,14 @@ namespace TheCrawler
                     }
 
                     iterator = 0;
+
+                    
                 }
                 lsFootball.AddRange(localMatches);
+
+                sw2.Stop();
+
+                Console.WriteLine($"Processing took: {sw2.ElapsedMilliseconds}.");
             }
 
             browser.Dispose();
@@ -194,14 +219,32 @@ namespace TheCrawler
 
         public List<CPMatch> FindMatchesByAlgo(List<CPMatch> matches)
         {
+            List<CPMatch> filteredList = new List<CPMatch>();
+
             foreach (var item in matches)
             {
-                item.BetMin_Key = item.Bets.Aggregate((l, r) => l.Value < r.Value ? l : r).Key;
-                item.BetMin_Val = item.Bets.Aggregate((l, r) => l.Value < r.Value ? l : r).Value;
+                if (item.Bets["1"] != 0 && 
+                    item.Bets["X"] != 0 &&
+                    item.Bets["2"] != 0)
+                {
+                    filteredList.Add(item);
+                }
+            }
 
+            foreach (var item in filteredList)
+            {
                 item.Bet01_Diff12 = Math.Abs(item.Bets["1"] - item.Bets["2"]);
                 item.Bet01_DiffX1 = Math.Abs(item.Bets["X"] - item.Bets["1"]);
                 item.Bet01_Diff2X = Math.Abs(item.Bets["2"] - item.Bets["X"]);
+
+                item.MatchPercent = ((1 / item.Bets["1"]) + (1 / item.Bets["X"]) + (1 / item.Bets["2"])) * 100;
+
+                //item.BetMin_Key = item.Bets.Aggregate((l, r) => l.Value < r.Value ? l : r).Key;
+                //item.BetMin_Val = item.Bets.Aggregate((l, r) => l.Value < r.Value ? l : r).Value;
+
+                //item.Bet01_Diff12 = Math.Abs(item.Bets["1"] - item.Bets["2"]);
+                //item.Bet01_DiffX1 = Math.Abs(item.Bets["X"] - item.Bets["1"]);
+                //item.Bet01_Diff2X = Math.Abs(item.Bets["2"] - item.Bets["X"]);
             }
 
             LsBet1.AddRange(matches.OrderBy(o => o.Bet01_Diff12).Reverse().ToList());
@@ -214,6 +257,10 @@ namespace TheCrawler
             string content = "";
             content = "Meciurile zilei:" + Environment.NewLine;
             content += Environment.NewLine;
+            content += "Total meciuri: ";
+            content += matches.Count;
+            content += Environment.NewLine;
+            content += Environment.NewLine;
 
             int iteration = 1;
 
@@ -225,12 +272,12 @@ namespace TheCrawler
                 content += " vs ";
                 content += match.AwayTeam;
                 content += Environment.NewLine;
-                content += match.PlayingDate.ToShortTimeString();
+content += match.PlayingDate.ToShortTimeString();
                 content += Environment.NewLine;
-                content += "Cota minima: ";
-                content += match.BetMin_Key;
-                content += ", ";
-                content += match.BetMin_Val;
+                content += "Procent: ";
+                content += match.MatchPercent;
+                content += "%.";
+                content += Environment.NewLine;
                 content += Environment.NewLine;
                 content += "1 vs 2 = ";
                 content += match.Bet01_Diff12;
@@ -274,8 +321,7 @@ namespace TheCrawler
 
             List<MailMessage> mails = new List<MailMessage>
             {
-                new MailMessage("oiganbet@gmail.com", "alex_radu@live.com", "Daily Report", content),
-                new MailMessage("oiganbet@gmail.com", "alex.bogdan.radu@gmail.com", "Daily Report", content)
+                new MailMessage("oiganbet@gmail.com", "alex_radu@live.com", "Daily Report", content)
             };
 
             foreach (var mail in mails)
