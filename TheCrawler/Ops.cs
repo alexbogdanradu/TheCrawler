@@ -36,16 +36,21 @@ namespace TheCrawler
 
             browser.FindElement(By.CssSelector("#retail-modal > div > div > div > button")).Click();
 
-#if DEBUG
+            //#if DEBUG
 
-#else
+            //#else
+            //            for (int i = 0; i < 120; i++)
+            //            {
+            //                Thread.Sleep(1000);
+            //                ((IJavaScriptExecutor)browser).ExecuteScript("window.scrollTo(0, document.body.scrollHeight - 150)");
+            //            }
+            //#endif
+
             for (int i = 0; i < 120; i++)
             {
                 Thread.Sleep(1000);
                 ((IJavaScriptExecutor)browser).ExecuteScript("window.scrollTo(0, document.body.scrollHeight - 150)");
             }
-#endif
-
 
             IWebElement table = browser.FindElement(By.ClassName("betting-tables"));
 
@@ -203,7 +208,7 @@ namespace TheCrawler
 
                     iterator = 0;
 
-                    
+
                 }
                 lsFootball.AddRange(localMatches);
 
@@ -223,7 +228,7 @@ namespace TheCrawler
 
             foreach (var item in matches)
             {
-                if (item.Bets["1"] != 0 && 
+                if (item.Bets["1"] != 0 &&
                     item.Bets["X"] != 0 &&
                     item.Bets["2"] != 0)
                 {
@@ -272,7 +277,7 @@ namespace TheCrawler
                 content += " vs ";
                 content += match.AwayTeam;
                 content += Environment.NewLine;
-content += match.PlayingDate.ToShortTimeString();
+                content += match.PlayingDate.ToShortTimeString();
                 content += Environment.NewLine;
                 content += "Procent: ";
                 content += match.MatchPercent;
