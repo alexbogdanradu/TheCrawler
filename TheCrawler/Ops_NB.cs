@@ -28,7 +28,7 @@ namespace TheCrawler
 
             Thread.Sleep(20000);
 
-            ICollection<IWebElement> games = browser.FindElements(By.ClassName("event-wrapper-inner"));
+            ICollection<IWebElement> games = browser.FindElements(By.CssSelector("[class='event-wrapper  v1 event-upcoming      event-sport-1 ']"));
 
             browser.ExecuteScript("var p=window.XMLHttpRequest.prototype; p.open=p.send=p.setRequestHeader=function(){};");
 
@@ -47,14 +47,16 @@ namespace TheCrawler
                         IWebElement AwayTeamMule = item.FindElement(By.CssSelector("[class='event-details-team-name event-details-team-a']"));
                         ICollection<IWebElement> oddsMule = item.FindElements(By.CssSelector("[class='bet-buttons-row ']"));
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         somethingwrong = true;
+                        Console.WriteLine(ex.Message);
                     }
 
                     if (somethingwrong)
                     {
                         Thread.Sleep(10);
+                        Console.WriteLine("Sleeping");
                     }
                     else
                     {
@@ -69,43 +71,41 @@ namespace TheCrawler
 
                 IWebElement HomeTeam = item.FindElement(By.CssSelector("[class='event-details-team-name event-details-team-a']"));
                 IWebElement AwayTeam = item.FindElement(By.CssSelector("[class='event-details-team-name event-details-team-b']"));
-                ICollection<IWebElement> odds = item.FindElements(By.CssSelector("[class='bet-buttons-row ']"));
+                ICollection<IWebElement> odds = item.FindElements(By.CssSelector("[class='bet-odds-number']"));
+                IWebElement time = item.FindElement(By.CssSelector("[data-uat='event-clock']"));
 
-                IWebElement odd_1;
-                IWebElement odd_X;
-                IWebElement odd_2;
+                lsFootball.Add(new Match());
+
+                lsFootball.Last().HomeTeam = HomeTeam.GetAttribute("textContent");
+                lsFootball.Last().AwayTeam = AwayTeam.GetAttribute("textContent");
+
+                lsFootball.Last().Bets = new Dictionary<string, double>();
 
                 int iterator = 0;
 
                 foreach (var odd in odds)
                 {
-                    switch (iterator)
+                    string bet = odd.GetAttribute("textContent");
+                    if (bet.Contains(","))
                     {
-                        case 0:
-                            odd_1 = odd.FindElement(By.CssSelector("[class='bet-odds-number']"));
-                            break;
-                        case 1:
-                            odd_X = odd.FindElement(By.CssSelector("[class='bet-odds-number']"));
-                            break;
-                        case 2:
-                            odd_2 = odd.FindElement(By.CssSelector("[class='bet-odds-number']"));
-                            break;
-                        default:
-                            break;
+                        bet.Replace(",", ".");
+                    }
+
+                    if (iterator == 0)
+                    {
+                        lsFootball.Last().Bets.Add("1", Double.Parse(bet));
+                    }
+                    if (iterator == 1)
+                    {
+                        lsFootball.Last().Bets.Add("X", Double.Parse(bet));
+                    }
+                    if (iterator == 2)
+                    {
+                        lsFootball.Last().Bets.Add("2", Double.Parse(bet));
                     }
 
                     iterator++;
                 }
-
-                lsFootball.Add(new Match());
-
-                lsFootball.Last().HomeTeam = HomeTeam.Text;
-                lsFootball.Last().AwayTeam = AwayTeam.Text;
-
-                Console.Write(AwayTeam.Text);
-
-                lsFootball.Last().Bets = new Dictionary<string, double>();
-                lsFootball.Last().Bets.Add("1", 0);
             }
             return lsFootball;
         }
