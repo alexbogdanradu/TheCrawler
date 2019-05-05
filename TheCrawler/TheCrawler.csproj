@@ -91,6 +91,7 @@
     <Compile Include="Ops_BTN.cs" />
     <Compile Include="Ops_CP.cs" />
     <Compile Include="Ops_Methods.cs" />
+    <Compile Include="Ops_SB.cs" />
     <Compile Include="Ops_NB.cs" />
     <Compile Include="Ops_Obsolete.cs" />
     <Compile Include="Program.cs" />
