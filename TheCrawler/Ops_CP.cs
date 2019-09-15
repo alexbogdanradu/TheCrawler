@@ -28,9 +28,9 @@ namespace TheCrawler
 #if DEBUG
 
 #else
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 120; i++)
             {
-                Thread.Sleep(3000);
+                Thread.Sleep(1000);
                 ((IJavaScriptExecutor)browser).ExecuteScript("window.scrollTo(0, document.body.scrollHeight - 150)");
             }
 #endif
@@ -84,13 +84,22 @@ namespace TheCrawler
 
                 iterator = 0;
 
-                //foreach (var _date in dates)
-                //{
-                //    localMatches[iterator].PlayingDate = _date.Text;
-                //    iterator++;
-                //}
+                foreach (var _date in dates)
+                {
+                    string time = _date.Text;
+                    time = time.Substring(time.IndexOf(" ") + 1, time.Length - time.IndexOf(" ") - 1);
 
-                //iterator = 0;
+                    DateTime matchTime = DateTime.ParseExact(time, "HH:mm", null);
+                    if (matchTime < DateTime.Now)
+                    {
+                        matchTime = matchTime.AddDays(1);
+                    }
+
+                    localMatches[iterator].PlayingDate = matchTime;
+                    iterator++;
+                }
+
+                iterator = 0;
 
                 List<int> pointers = new List<int>();
 
