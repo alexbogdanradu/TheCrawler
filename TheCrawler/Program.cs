@@ -24,17 +24,60 @@ namespace TheCrawler
 
             Ops ops = new Ops();
 
-            List<Match> matches_sb = ops.FetchMatches_SB(); 
-            List<Match> matches_nb = ops.FetchMatches_NB();
-            List<Match> matches_cp = ops.FetchMatches_CP();
-            List<Match> matches_btn = ops.FetchMatches_BTN();
+            Dictionary<string, string> leagues = new Dictionary<string, string>();
+            leagues.Add("PremiereLeague", "https://www.flashscore.ro/fotbal/anglia/premier-league/arhiva/");
+            leagues.Add("Ligue1", "https://www.flashscore.ro/fotbal/franta/ligue-1/arhiva/");
+            leagues.Add("Bundesliga", "https://www.flashscore.ro/fotbal/germania/bundesliga/arhiva/");
+
+            List<ArchiveMatch> MasterArchive = new List<ArchiveMatch>();
+
+            Dictionary<string, List<string>> leaguesArchive = new Dictionary<string, List<string>>();
+
+            foreach (var item in leagues)
+            {
+                leaguesArchive.Add(item.Key, ops.FetchMatches_FlashScoreGetArchiveList(item.Value));
+            }
+
+            int freq = 2;
+            int counter = 0;
+            int duration = 60;
+
+            foreach (var league in leaguesArchive)
+            {
+                foreach (var archiveLink in league.Value)
+                {
+                    counter++;
+                    if (counter%freq == 0)
+                    {
+                        Thread.Sleep(duration * 1000);
+                    }
+                    ops.FetchMatches_FlashScoreAsync(archiveLink);
+                }
+            }
+
+            //foreach (var league in leaguesArchive)
+            //{
+            //    foreach (var archiveLink in league.Value)
+            //    {
+            //        MasterArchive.AddRange(ops.FetchMatches_FlashScore(archiveLink));
+            //        foreach (var item in MasterArchive)
+            //        {
+            //            Console.WriteLine($"{item.HomeTeam} vs {item.AwayTeam}");
+            //        }
+            //    }
+            //}
+
+            //List<Match> matches_sb = ops.FetchMatches_SB(); 
+            //List<Match> matches_nb = ops.FetchMatches_NB();
+            //List<Match> matches_cp = ops.FetchMatches_CP();
+            //List<Match> matches_btn = ops.FetchMatches_BTN();
 
             List<List<Match>> masterList = new List<List<Match>>();
 
-            masterList.Add(matches_sb);
-            masterList.Add(matches_nb);
-            masterList.Add(matches_cp);
-            masterList.Add(matches_btn);
+            //masterList.Add(matches_sb);
+            //masterList.Add(matches_nb);
+            //masterList.Add(matches_cp);
+            //masterList.Add(matches_btn);
 
             string json = JsonConvert.SerializeObject(masterList);
 

@@ -28,7 +28,7 @@ namespace TheCrawler
 
             Thread.Sleep(20000);
 
-            ICollection<IWebElement> games = browser.FindElements(By.CssSelector("[class='event-wrapper  v1 event-upcoming      event-sport-1 ']"));
+            ICollection<IWebElement> games = browser.FindElements(By.CssSelector("[class='rj-ev-list__content']"));
 
             browser.ExecuteScript("var p=window.XMLHttpRequest.prototype; p.open=p.send=p.setRequestHeader=function(){};");
 
