@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using ArchiveModel.Models.Database;
+using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
@@ -9,6 +10,7 @@ using System.Linq;
 using System.Net.Mail;
 using System.Text;
 using System.Threading;
+using Microsoft.EntityFrameworkCore;
 
 namespace TheCrawler
 {
@@ -16,6 +18,21 @@ namespace TheCrawler
     {
         static void Main(string[] args)
         {
+            //var context = new betsContext();
+
+            //var t = new Archive
+            //{   
+            //    AwayTeam = "awt",
+            //    HomeTeamScore = 2,
+            //    AwayTeamScore = 1,
+            //    HomeTeam = "hmt",
+            //    League = "ka",
+            //    PlayingDate = DateTime.Now
+            //};
+
+            //context.Archive.Add(t);
+            //context.SaveChanges();
+
             Console.SetWindowSize(110, 30);
             Console.SetBufferSize(110, 10000);
             DateTime start = DateTime.Now;
@@ -28,6 +45,9 @@ namespace TheCrawler
             leagues.Add("PremiereLeague", "https://www.flashscore.ro/fotbal/anglia/premier-league/arhiva/");
             leagues.Add("Ligue1", "https://www.flashscore.ro/fotbal/franta/ligue-1/arhiva/");
             leagues.Add("Bundesliga", "https://www.flashscore.ro/fotbal/germania/bundesliga/arhiva/");
+            leagues.Add("SerieA", "https://www.flashscore.ro/fotbal/italia/serie-a/arhiva/");
+            leagues.Add("Liga1", "https://www.flashscore.ro/fotbal/romania/liga-1/arhiva/");
+            leagues.Add("LaLiga", "https://www.flashscore.ro/fotbal/spania/laliga/arhiva/");
 
             List<ArchiveMatch> MasterArchive = new List<ArchiveMatch>();
 
@@ -38,20 +58,34 @@ namespace TheCrawler
                 leaguesArchive.Add(item.Key, ops.FetchMatches_FlashScoreGetArchiveList(item.Value));
             }
 
-            int freq = 2;
-            int counter = 0;
-            int duration = 60;
+            //int freq = 2;
+            //int counter = 0;
+            //int duration = 60;
+
+            //foreach (var league in leaguesArchive)
+            //{
+            //    foreach (var archiveLink in league.Value)
+            //    {
+            //        counter++;
+            //        if (counter%freq == 0)
+            //        {
+            //            Thread.Sleep(duration * 1000);
+            //        }
+            //        ops.FetchMatches_FlashScoreAsync(archiveLink);
+            //    }
+            //}
 
             foreach (var league in leaguesArchive)
             {
                 foreach (var archiveLink in league.Value)
                 {
-                    counter++;
-                    if (counter%freq == 0)
-                    {
-                        Thread.Sleep(duration * 1000);
-                    }
-                    ops.FetchMatches_FlashScoreAsync(archiveLink);
+                    //counter++;
+                    //if (counter % freq == 0)
+                    //{
+                    //    Thread.Sleep(duration * 1000);
+                    //}
+                    ops.FetchMatches_FlashScore(archiveLink);
+                    //ops.FetchMatches_FlashScoreAsync(archiveLink);
                 }
             }
 
