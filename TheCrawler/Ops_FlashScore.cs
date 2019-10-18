@@ -14,6 +14,19 @@ namespace TheCrawler
 {
     public partial class Ops
     {
+        public List<Task> GetListOfTasks(List<string> links)
+        {
+            List<Task> tasks = new List<Task>();
+
+            foreach (var link in links)
+            {
+                Task task = new Task(() => FetchMatches_FlashScore(link));
+                tasks.Add(task);
+            }
+
+            return tasks;
+        }
+
         public async void FetchMatches_FlashScoreAsync(string link)
         {
             await Task.Run(() => FetchMatches_FlashScore(link));
@@ -23,9 +36,10 @@ namespace TheCrawler
         {
             ChromeOptions co = new ChromeOptions();
 
-            //co.AddArguments("headless");
+            co.AddArguments("headless");
 
             ChromeDriver browser = new ChromeDriver(co);
+            //ChromeDriver browser = new ChromeDriver();
 
             List<ArchiveMatch> lsFootball = new List<ArchiveMatch>();
 
@@ -41,14 +55,17 @@ namespace TheCrawler
 
                     try
                     {
+                        ((IJavaScriptExecutor)browser).ExecuteScript("window.scrollTo(0, document.body.scrollHeight - 150)");
+                        DateTime start = DateTime.Now;
                         button.Click();
-                        Thread.Sleep(3000);
+                        DateTime stop1 = DateTime.Now;
+                        Thread.Sleep(500);
                     }
                     catch (Exception)
                     {
 
                     }
-                    
+
                 }
                 catch (Exception)
                 {
@@ -68,45 +85,54 @@ namespace TheCrawler
 
             string date = "";
 
+            Stopwatch stopwatch = new Stopwatch();
+            Stopwatch stopwatchTotal = new Stopwatch();
+            stopwatch.Start();
+            stopwatchTotal.Start();
+
+            int matchCount = 0;
+
             foreach (var game in soccerList)
             {
-                Stopwatch stopwatch = new Stopwatch();
-
-                stopwatch.Start();
-
-                IWebElement WETime = game.FindElement(By.ClassName("event__time"));
-                Console.WriteLine(stopwatch.ElapsedMilliseconds + " to get the event time");
-                IWebElement WEHomeTeam = game.FindElement(By.CssSelector("div[class*='event__participant event__participant--home']"));
-                Console.WriteLine(stopwatch.ElapsedMilliseconds + " to get the home team");
-                IWebElement WEAwayTeam = game.FindElement(By.CssSelector("div[class*='event__participant event__participant--away']"));
-                Console.WriteLine(stopwatch.ElapsedMilliseconds + " to get the away team");
-                IWebElement WEScore = game.FindElement(By.CssSelector("div[class*='event__scores']"));
-                Console.WriteLine(stopwatch.ElapsedMilliseconds + " to get the scores");
-                IWebElement WEPauza = game.FindElement(By.CssSelector("div[class*='event__part']"));
-                Console.WriteLine(stopwatch.ElapsedMilliseconds + " to get the pause element");
-
-                date = WETime.Text;
-
-                day = Convert.ToInt32(date.Substring(0, 2));
-                month = Convert.ToInt32(date.Substring(3, 2));
-                hour = Convert.ToInt32(date.Substring(7, 2));
-                minute = Convert.ToInt32(date.Substring(10, 2));
-                year = Convert.ToInt32(WELeagueYear.Text.Substring(0, 4));
-                
-                Console.WriteLine(stopwatch.ElapsedMilliseconds + " to convert string to date");
-
-                lsFootball.Add(new ArchiveMatch
+                try
                 {
-                    HomeTeam = WEHomeTeam.Text,
-                    AwayTeam = WEAwayTeam.Text,
-                    PlayingDate = new DateTime(year, month, day, hour, minute, 0),
-                    HomeTeamScore = Convert.ToInt32(WEScore.Text.Substring(0, WEScore.Text.IndexOf("\r\n"))),
-                    AwayTeamScore = Convert.ToInt32(WEScore.Text.Substring(WEScore.Text.IndexOf("- \r\n") + 4)),
-                    League = WELeagueName.Text
-                });
+                    matchCount++;
 
-                Console.WriteLine(stopwatch.ElapsedMilliseconds + " to get the entire match");
+                    stopwatch.Restart();
+
+                    IWebElement WETime = game.FindElement(By.ClassName("event__time"));
+                    IWebElement WEHomeTeam = game.FindElement(By.CssSelector("div[class*='event__participant event__participant--home']"));
+                    IWebElement WEAwayTeam = game.FindElement(By.CssSelector("div[class*='event__participant event__participant--away']"));
+                    IWebElement WEScore = game.FindElement(By.CssSelector("div[class*='event__scores']"));
+                    IWebElement WEPauza = game.FindElement(By.CssSelector("div[class*='event__part']"));
+
+                    date = WETime.Text;
+
+                    day = Convert.ToInt32(date.Substring(0, 2));
+                    month = Convert.ToInt32(date.Substring(3, 2));
+                    hour = Convert.ToInt32(date.Substring(7, 2));
+                    minute = Convert.ToInt32(date.Substring(10, 2));
+                    year = Convert.ToInt32(WELeagueYear.Text.Substring(0, 4));
+
+                    lsFootball.Add(new ArchiveMatch
+                    {
+                        HomeTeam = WEHomeTeam.Text,
+                        AwayTeam = WEAwayTeam.Text,
+                        PlayingDate = new DateTime(year, month, day, hour, minute, 0),
+                        HomeTeamScore = Convert.ToInt32(WEScore.Text.Substring(0, WEScore.Text.IndexOf("\r\n"))),
+                        AwayTeamScore = Convert.ToInt32(WEScore.Text.Substring(WEScore.Text.IndexOf("- \r\n") + 4)),
+                        League = WELeagueName.Text
+                    });
+
+                    //Console.WriteLine($"{matchCount} from {WELeagueName.Text}/{year} in: {stopwatch.ElapsedMilliseconds}mS.");
+                }
+                catch (Exception ex)
+                {
+                    //Console.WriteLine($"Something went wrong while getting a match {ex.Message}");
+                }
             }
+
+            Console.WriteLine($"Finished getting {WELeagueName.Text}/{WELeagueYear.Text.Substring(0, 4)} in: {stopwatch.Elapsed.TotalSeconds}S ({matchCount} total)");
 
             using (StreamWriter sw = new StreamWriter($"results/{DateTime.Now.ToFileTime()}.json"))
             {

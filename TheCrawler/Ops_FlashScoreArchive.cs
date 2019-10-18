@@ -15,7 +15,11 @@ namespace TheCrawler
         {
             List<string> archive = new List<string>();
 
-            ChromeDriver browser = new ChromeDriver();
+            ChromeOptions co = new ChromeOptions();
+
+            co.AddArguments("headless");
+
+            ChromeDriver browser = new ChromeDriver(co);
 
             Dictionary<int, string> linksByYears = new Dictionary<int, string>();
 
