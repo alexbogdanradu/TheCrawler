@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheCrawler", "TheCrawler\Th
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchiveModel", "ArchiveModel\ArchiveModel.csproj", "{FE3C935C-E37F-4BFB-9296-5202C61396B3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAnalysis", "DataAnalisys\DataAnalysis.csproj", "{84075483-7FB6-4B1A-B8A9-971812D58DC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{FE3C935C-E37F-4BFB-9296-5202C61396B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE3C935C-E37F-4BFB-9296-5202C61396B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE3C935C-E37F-4BFB-9296-5202C61396B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84075483-7FB6-4B1A-B8A9-971812D58DC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84075483-7FB6-4B1A-B8A9-971812D58DC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84075483-7FB6-4B1A-B8A9-971812D58DC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84075483-7FB6-4B1A-B8A9-971812D58DC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
