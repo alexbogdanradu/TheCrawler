@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace DataAnalisys
 {
@@ -10,6 +11,18 @@ namespace DataAnalisys
     {
         static void Main(string[] args)
         {
+            #region Generate Patterns
+            List<string> patterns = new List<string>();
+            string alphabet = "1x2";
+            int numOfLetters = 6;
+
+            for (int i = 2; i <= numOfLetters; i++)
+            {
+                patterns.AddRange(GeneratePatterns(alphabet, i));
+            }
+
+            #endregion
+
             List<ArchiveMatch> matches = new List<ArchiveMatch>();
 
             //get the matches from the file
@@ -40,38 +53,7 @@ namespace DataAnalisys
                 }
             }
 
-            //generate pattern strings
-            List<string> patterns = new List<string>();
 
-            string theString = "111";
-
-            for (int j = 0; j < theString.Length; j++)
-            {
-                for (int i = 0; i < theString.Length; i++)
-                {
-                    if (i == 0)
-                    {
-                        char[] arr = theString.ToCharArray();
-                        arr[j] = '1';
-                        theString = new string(arr);
-                        patterns.Add(theString);
-                    }
-                    if (i == 1)
-                    {
-                        char[] arr = theString.ToCharArray();
-                        arr[j] = 'x';
-                        theString = new string(arr);
-                        patterns.Add(theString);
-                    }
-                    if (i == 2)
-                    {
-                        char[] arr = theString.ToCharArray();
-                        arr[j] = '2';
-                        theString = new string(arr);
-                        patterns.Add(theString);
-                    }
-                }
-            }
 
             foreach (var teamMatches in matchesPlayedByAteam)
             {
@@ -156,6 +138,92 @@ namespace DataAnalisys
             }
 
             Console.Read();
+        }
+
+        private static IEnumerable<string> GeneratePatterns(string alphabet, int numOfLetters)
+        {
+            if (numOfLetters <= 0)
+            {
+                return null;
+            }
+
+            List<string> localPatterns = new List<string>();
+            StringBuilder workString = new StringBuilder();
+
+            for (int i = 0; i < numOfLetters; i++)
+            {
+                workString.Append(alphabet[0]);
+            }
+
+            localPatterns.Add(workString.ToString());
+
+            bool stay = true;
+
+            while (stay)
+            {
+                workString.Replace(workString.ToString(), GetNextPattern(workString.Length - 1, workString.ToString(), alphabet));
+                localPatterns.Add(workString.ToString());
+
+                int exitCounter = 0;
+
+                for (int j = 0; j < workString.Length; j++)
+                {
+                    if (workString[j] == alphabet[alphabet.IndexOf(alphabet.Last())])
+                    {
+                        exitCounter++;
+                    }
+                }
+                if (exitCounter == workString.Length)
+                {
+                    stay = false;
+                }
+            }
+
+            return localPatterns;
+        }
+
+        private static string GetNextPattern(int index, string actualString, string alphabet)
+        {   
+            StringBuilder sb = new StringBuilder(actualString);
+            char newLetter = GetNextLetter(actualString[index], alphabet);
+            if (newLetter == alphabet[0])
+            {
+                if (index - 1 < 0)
+                {
+                    sb[index] = newLetter;
+                    return sb.ToString();
+                }
+                else
+                {
+                    sb[index] = newLetter;
+                    return GetNextPattern(index - 1, sb.ToString(), alphabet);
+                }
+            }
+            else
+            {
+                sb[index] = newLetter;
+                return sb.ToString();
+            }
+        }
+
+        private static char GetNextLetter(char v, string alpha)
+        {
+            StringBuilder alphabet = new StringBuilder(alpha);
+
+            for (int i = 0; i < alphabet.Length; i++)
+            {
+                if (alphabet[i] == v)
+                {
+                    if (i == alphabet.Length - 1)
+                    {
+                        return alphabet[0];
+                    }
+
+                    return alphabet[i + 1];
+                }
+            }
+
+            return ' ';
         }
     }
 
