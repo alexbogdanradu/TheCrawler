@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,18 +12,23 @@ namespace DataAnalisys
     {
         static void Main(string[] args)
         {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
             #region Generate Patterns
             List<string> patterns = new List<string>();
             string alphabet = "1x2";
-            int numOfLetters = 6;
+            int startQuantityPattern = 3;
+            int endQuantityPattern = 3;
 
-            for (int i = 2; i <= numOfLetters; i++)
+            for (int i = startQuantityPattern; i <= endQuantityPattern; i++)
             {
                 patterns.AddRange(GeneratePatterns(alphabet, i));
             }
 
             #endregion
 
+            #region GetAllTeams
             List<ArchiveMatch> matches = new List<ArchiveMatch>();
 
             //get the matches from the file
@@ -31,14 +37,13 @@ namespace DataAnalisys
                 matches.AddRange(JsonConvert.DeserializeObject<List<ArchiveMatch>>(sr.ReadToEnd()));
             }
 
-            //Get all unique away teams
+            //Get all unique teams
             List<string> teams = matches.Select(o => o.HomeTeam).Distinct().ToList();
             teams.AddRange(matches.Select(o => o.AwayTeam).Distinct().ToList());
             teams = teams.Distinct().ToList();
 
             //dictionary containing name of the team and its played matches
             Dictionary<string, List<ArchiveMatch>> matchesPlayedByAteam = new Dictionary<string, List<ArchiveMatch>>();
-            List<Team> allTeams = new List<Team>();
 
             //get all the distinct teams
             foreach (var team in teams)
@@ -53,90 +58,82 @@ namespace DataAnalisys
                 }
             }
 
+            #endregion
 
+            #region Analyze Pattern Occurances
 
-            foreach (var teamMatches in matchesPlayedByAteam)
+            List<Pattern> occurances = new List<Pattern>();
+            List<Team> teamsWithPatterns = new List<Team>();
+
+            //foreach team
+            foreach (var teamMatchesDict in matchesPlayedByAteam)
             {
-                List<ArchiveMatch> archiveMatches = teamMatches.Value.OrderBy(o => o.PlayingDate).ToList();
-                teamMatches.Value.RemoveAll(o => o.HomeTeam != null);
-                teamMatches.Value.AddRange(archiveMatches);
+                Team team = new Team { Name = teamMatchesDict.Key};
 
-                allTeams.Add(new Team { TeamName = teamMatches.Key });
-
-                List<string> results = new List<string>();
-
-                foreach (var item in teamMatches.Value)
+                Console.Clear();
+                foreach (var item in occurances.OrderBy(o => o.occurance).Reverse().Take(30))
                 {
+                    Console.WriteLine($"{item.pattern}: {item.occurance}");
+                }
 
-                    if (item.Result == "1" && item.HomeTeam == teamMatches.Key)
+                foreach (var pattern in patterns)
+                {
+                    string secondPattern = "";
+                    int count = 0;
+
+                    //search for pattern
+                    for (int i = 0; i < teamMatchesDict.Value.Count - pattern.Length; i++)
                     {
-                        results.Add("1");
+                        for (int j = 0; j < pattern.Length; j++)
+                        {
+                            if (teamMatchesDict.Value[i + j].HomeTeam == teamMatchesDict.Key)
+                            {
+                                secondPattern += teamMatchesDict.Value[i + j].Result;
+                            }
+                            else
+                            {
+                                secondPattern += teamMatchesDict.Value[i + j].ResultAsAwayTeam;
+                            }
+                        }
+
+                        if (secondPattern == pattern)
+                        {
+                            count++;
+                        }
                     }
-                    else if (item.Result == "2" && item.AwayTeam == teamMatches.Key)
+
+                    //save the occurances
+                    if (!team.patterns.Any(o => o.pattern == pattern))
                     {
-                        results.Add("1");
+                        team.patterns.Add(new Pattern { pattern = pattern, occurance = count });
                     }
                     else
                     {
-                        results.Add("0");
+                        team.patterns.First(o => o.pattern == pattern).occurance += count;
                     }
                 }
 
-                for (int i = 0; i < results.Count; i++)
-                {
-                    if (results[i] == "1")
-                    {
-                        allTeams.Last().wins++;
-                    }
-
-                    if (i < results.Count - 1)
-                    {
-                        if (results[i] == "0" && results[i + 1] == "1")
-                        {
-                            allTeams.Last().pat01++;
-                        }
-                        if (results[i] == "0" && results[i + 1] == "0")
-                        {
-                            allTeams.Last().pat00++;
-                        }
-                        if (results[i] == "1" && results[i + 1] == "0")
-                        {
-                            allTeams.Last().pat10++;
-                        }
-                        if (results[i] == "1" && results[i + 1] == "1")
-                        {
-                            allTeams.Last().pat11++;
-                        }
-                    }
-
-                    if (i < results.Count - 2)
-                    {
-                        if (results[i] == "1" && results[i + 1] == "1" && results[i + 2] == "1")
-                        {
-                            allTeams.Last().pat111++;
-                        }
-                        if (results[i] == "0" && results[i + 1] == "0" && results[i + 2] == "0")
-                        {
-                            allTeams.Last().pat000++;
-                        }
-                    }
-                }
+                //save to teams list
+                teamsWithPatterns.Add(team);
             }
 
-            foreach (var team in allTeams)
-            {
-                Console.Clear();
-                Console.WriteLine($"Team:\t\t{team.TeamName}");
-                Console.WriteLine($"Games played:\t{team.plays}");
-                Console.WriteLine($"00:\t\t{team.pat00}.\tMax: {allTeams.Max(o => o.pat00)}.\tAvg: {allTeams.Average(o => o.pat00).ToString().Substring(0, 6)}");
-                Console.WriteLine($"01:\t\t{team.pat01}.\tMax: {allTeams.Max(o => o.pat01)}.\tAvg: {allTeams.Average(o => o.pat01).ToString().Substring(0, 6)}");
-                Console.WriteLine($"10:\t\t{team.pat10}.\tMax: {allTeams.Max(o => o.pat10)}.\tAvg: {allTeams.Average(o => o.pat10).ToString().Substring(0, 6)}");
-                Console.WriteLine($"11:\t\t{team.pat11}.\tMax: {allTeams.Max(o => o.pat11)}.\tAvg: {allTeams.Average(o => o.pat11).ToString().Substring(0, 6)}");
-                Console.WriteLine($"000:\t\t{team.pat000}.\tMax: {allTeams.Max(o => o.pat000)}.\tAvg: {allTeams.Average(o => o.pat000).ToString().Substring(0, 6)}");
-                Console.WriteLine($"111:\t\t{team.pat111}.\tMax: {allTeams.Max(o => o.pat111)}.\tAvg: {allTeams.Average(o => o.pat111).ToString().Substring(0, 6)}");
-                Console.Read();
-            }
+            #endregion
 
+            //foreach (var team in allTeams)
+            //{
+            //    Console.Clear();
+            //    Console.WriteLine($"Team:\t\t{team.TeamName}");
+            //    Console.WriteLine($"Games played:\t{team.plays}");
+            //    Console.WriteLine($"00:\t\t{team.pat00}.\tMax: {allTeams.Max(o => o.pat00)}.\tAvg: {allTeams.Average(o => o.pat00).ToString().Substring(0, 6)}");
+            //    Console.WriteLine($"01:\t\t{team.pat01}.\tMax: {allTeams.Max(o => o.pat01)}.\tAvg: {allTeams.Average(o => o.pat01).ToString().Substring(0, 6)}");
+            //    Console.WriteLine($"10:\t\t{team.pat10}.\tMax: {allTeams.Max(o => o.pat10)}.\tAvg: {allTeams.Average(o => o.pat10).ToString().Substring(0, 6)}");
+            //    Console.WriteLine($"11:\t\t{team.pat11}.\tMax: {allTeams.Max(o => o.pat11)}.\tAvg: {allTeams.Average(o => o.pat11).ToString().Substring(0, 6)}");
+            //    Console.WriteLine($"000:\t\t{team.pat000}.\tMax: {allTeams.Max(o => o.pat000)}.\tAvg: {allTeams.Average(o => o.pat000).ToString().Substring(0, 6)}");
+            //    Console.WriteLine($"111:\t\t{team.pat111}.\tMax: {allTeams.Max(o => o.pat111)}.\tAvg: {allTeams.Average(o => o.pat111).ToString().Substring(0, 6)}");
+            //    Console.Read();
+            //}
+
+            Console.WriteLine(sw.Elapsed);
             Console.Read();
         }
 
@@ -183,7 +180,7 @@ namespace DataAnalisys
         }
 
         private static string GetNextPattern(int index, string actualString, string alphabet)
-        {   
+        {
             StringBuilder sb = new StringBuilder(actualString);
             char newLetter = GetNextLetter(actualString[index], alphabet);
             if (newLetter == alphabet[0])
@@ -229,7 +226,8 @@ namespace DataAnalisys
 
     public class Pattern
     {
-
+        public string pattern;
+        public int occurance;
     }
 
     public class ArchiveMatch
@@ -240,6 +238,26 @@ namespace DataAnalisys
         public int HomeTeamScore { get; set; }
         public int AwayTeamScore { get; set; }
         public string League { get; set; }
+
+        [JsonIgnore]
+        public string ResultAsAwayTeam
+        {
+            get
+            {
+                if (HomeTeamScore > AwayTeamScore)
+                {
+                    return "2";
+                }
+                else if (HomeTeamScore < AwayTeamScore)
+                {
+                    return "1";
+                }
+                else
+                {
+                    return "x";
+                }
+            }
+        }
 
         [JsonIgnore]
         public string Result
@@ -264,14 +282,15 @@ namespace DataAnalisys
 
     public class Team
     {
-        public string TeamName { get; set; }
-        public int plays { get; set; }
-        public int wins { get; set; }
-        public int pat00 { get; set; }
-        public int pat01 { get; set; }
-        public int pat10 { get; set; }
-        public int pat11 { get; set; }
-        public int pat111 { get; set; }
-        public int pat000 { get; set; }
+        public string Name;
+        public int Wins;
+        public int Losses;
+        public int Draws;
+
+        public List<Pattern> patterns = new List<Pattern>();
+
+        public int playedMatches { get {
+                return Wins + Losses + Draws;
+            } }
     }
 }
